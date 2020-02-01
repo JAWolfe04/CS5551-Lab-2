@@ -16,9 +16,9 @@
             abbreviation to retrieve the weather for that area.</p>
         <div class="row form-inline">
             <label for="city" class="pr-2">City</label>
-            <input type="text" class="form-control mr-2" id="city" placeholder="Kansas City"></input>
+            <input type="text" class="form-control mr-2" id="city" placeholder="City"></input>
             <label for="country" class="pr-2">Country</label>
-            <input type="text" class="form-control mr-2" id="country" placeholder="US"></input>
+            <input type="text" class="form-control mr-2" id="country" placeholder="Country"></input>
             <button type="button" class="btn btn-primary" id="searchBtn">Search</button>
         </div>
         <div class="row">
@@ -28,8 +28,8 @@
 
     <script>
         $(function(){
-            $("#city").val("Kansas City");
-            $("#country").val("US");
+            //$("#city").val("Kansas City");
+            //$("#country").val("US");
 
             $("#searchBtn").click(function(){
                 $.get("http://api.openweathermap.org/data/2.5/forecast?q=" + $("#city").val() +
@@ -77,7 +77,27 @@
                     canvasContext.fillText("Wind " + parseFloat(hourly[0].wind.speed).toFixed(0) +
                         " mph", rightColX, secondRowY + 75 + 20);
 
+                    let tempArray = [];
+                    for (let i = 1; i < 9; ++i)
+                        tempArray.push(parseFloat(hourly[i].main.temp).toFixed(0));
+                    let lowTemp = Math.min(...tempArray);
+                    let tempMulti = 150 / (Math.max(...tempArray) - lowTemp);
+                    let displayLow = bottomRowY - 125;
+
                     for (let i = 1; i < 9; ++i) {
+                        let hourTemp = tempArray[i - 1];
+                        let hourTempTop = displayLow - ((hourTemp - lowTemp) * tempMulti);
+                        canvasContext.beginPath();
+                        canvasContext.moveTo((i - 1) * 100 + 13, bottomRowY - 100);
+                        canvasContext.lineTo((i - 1) * 100 + 13, hourTempTop);
+                        canvasContext.lineTo(((i - 1) * 100) + 38, hourTempTop);
+                        canvasContext.lineTo(((i - 1) * 100) + 38, bottomRowY - 100);
+                        canvasContext.closePath();
+                        canvasContext.stroke();
+                        canvasContext.fillStyle = hourTemp > 45 ? "rgb(255, 150, 0)" : "rgb(0, 150, 255)";
+                        canvasContext.fill();
+                        canvasContext.fillStyle = "black";
+
                         let hourTime = new Date(parseInt(hourly[i].dt) * 1000);
                         canvasContext.fillText(hourTime.toLocaleString("en-US",
                             {hour:'numeric', hour12:true}), (i - 1) * 100, bottomRowY - 75);
@@ -87,8 +107,7 @@
                         hourWeatherImg.onload = function() { canvasContext.drawImage(hourWeatherImg,
                             (i - 1) * 100, bottomRowY - 75); };
 
-                        canvasContext.fillText(parseFloat(hourly[i].main.temp).toFixed(0) + "°F",
-                            (i - 1) * 100, bottomRowY);
+                        canvasContext.fillText(hourTemp + "°F", (i - 1) * 100, bottomRowY);
                     }
                 };
             };
