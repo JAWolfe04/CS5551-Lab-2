@@ -13,8 +13,11 @@
 <body>
     <div class="container pt-3">
         <h1 class="text-center">Weather App</h1>
+
         <p class="pt-2">Please enter the desired city name and country two letter
             abbreviation to retrieve the weather for that area.</p>
+
+        <!--Dividing the inputs and weather into rows provides better resizing-->
         <div class="row form-inline">
             <label for="city" class="pr-2">City</label>
             <input type="text" class="form-control mr-2" id="city" placeholder="City"></input>
@@ -23,6 +26,7 @@
             <button type="button" class="btn btn-primary" id="searchBtn">Search</button>
         </div>
         <div class="row">
+            <!--Canvas will be resized and drawn at runtime showing the weather for the location-->
             <canvas class="mt-4" id="weatherCanvas"></canvas>
         </div>
     </div>
