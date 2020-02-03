@@ -6,6 +6,7 @@ $(function(){
 function createWeatherDisplay() {
     let location = $("#city").val() + ", " + $("#country").val();
     let canvas = document.getElementById("weatherCanvas");
+    let graphStart = 0;
 
     //Resize canvas
     let canvasWidth = 800;
@@ -17,7 +18,7 @@ function createWeatherDisplay() {
     $.get("http://api.openweathermap.org/data/2.5/weather?q=" + location +
         "&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
         function( data ) {
-            drawCurrentWeather(canvas, data);
+            graphStart = drawCurrentWeather(canvas, data);
         }, "json" )
         .fail(errorAlert)
         .done(function(){
@@ -25,7 +26,7 @@ function createWeatherDisplay() {
             $.get("http://api.openweathermap.org/data/2.5/forecast?q=" + location +
                 "&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
                 function( data ) {
-                    drawForecast(canvas, data.list);
+                    drawForecast(canvas, data.list, graphStart);
                 }, "json" )
                 //Error check in the event the connection is lost between
                 // making the second api call or another unexpected error
@@ -73,49 +74,66 @@ function drawCurrentWeather(canvas, curWeather) {
 
     context.fillText("Wind " + parseFloat(curWeather.wind.speed).toFixed(0) +
         " mph", rightColX, secondRowY + curFontSize * 3 + spaceSize * 2);
+
+    // Find the point where the graph should start
+    // and pass it to the next drawForecast
+    let leftBottom = thirdRowY + curFontSize;
+    let rightBottom = secondRowY + curFontSize * 3 + spaceSize * 2;
+    return leftBottom > rightBottom ? leftBottom : rightBottom;
 };
 
-function drawForecast(canvas, hourly) {
+function drawForecast(canvas, hourly, graphTopY) {
     let context = canvas.getContext("2d");
-    let graphHeight = 150;
     let hourlyWidthSpace = 100;
+    let graphBottomY = canvas.height - 100;
+    let timeBottomY = canvas.height - 75;
+    let hourlyTempY = canvas.height;
+    // graphMargins is the minimum height of the lowest
+    // temp and the buffer from the top of the graph
+    let graphMargins = 25;
+    let barLeft = 13;
+    let barRight = barLeft + 25;
 
-    //Create temperature array to calculate positions of bar graph
+    //Create temperature array to calculate height limits of bar graph
     let tempArray = [];
     for (let i = 0; i < 8; ++i)
         tempArray.push(parseFloat(hourly[i].main.temp).toFixed(0));
     let lowestTemp = Math.min(...tempArray);
-    let tempMulti = graphHeight / (Math.max(...tempArray) - lowestTemp);
+    //tempMulti is the percent of the graph's height that each temp is multiplied
+    let tempMulti = (graphTopY + 10 + graphMargins) / (Math.max(...tempArray) - lowestTemp);
 
     for (let i = 0; i < 8; ++i) {
         let hourTemp = tempArray[i];
-        let hourTempTop = (canvas.height - 125) - ((hourTemp - lowestTemp) * tempMulti);
+        let barHeight = (hourTemp - lowestTemp) * tempMulti;
+        // From the bottom of the graph, remove the minimum margin
+        // then remove the bar height to find the top of each bar
+        let hourTempTop = (graphBottomY - graphMargins) - barHeight;
         context.beginPath();
-        context.moveTo(i * hourlyWidthSpace + 13, canvas.height - 100);
-        context.lineTo(i * hourlyWidthSpace + 13, hourTempTop);
-        context.lineTo((i * hourlyWidthSpace) + 38, hourTempTop);
-        context.lineTo((i * hourlyWidthSpace) + 38, canvas.height - 100);
+        context.moveTo((i * hourlyWidthSpace) + barLeft, graphBottomY);
+        context.lineTo((i * hourlyWidthSpace) + barLeft, hourTempTop);
+        context.lineTo((i * hourlyWidthSpace) + barRight, hourTempTop);
+        context.lineTo((i * hourlyWidthSpace) + barRight, graphBottomY);
         context.closePath();
         context.stroke();
         //Using 45 as a midpoint for temperature where less than 45 degrees is cold/blue
         //and above is warm/orange
         context.fillStyle = hourTemp > 45 ? "rgb(255, 150, 0)" : "rgb(0, 150, 255)";
         context.fill();
-        
+
         //Return text to default black color
         context.fillStyle = "black";
 
+        //Time in the json is in unix epoch in seconds and must be converted to milliseconds
         let hourTime = new Date(parseInt(hourly[i].dt) * 1000);
         context.font = "25px Arial";
         context.fillText(hourTime.toLocaleString("en-US",
-            {hour:'numeric', hour12:true}), i * 100, canvas.height - 75);
+            {hour:'numeric', hour12:true}), i * hourlyWidthSpace, timeBottomY);
 
         let hourWeatherImg = new Image();
         hourWeatherImg.src = "https://openweathermap.org/img/wn/" + hourly[i].weather[0].icon + ".png";
         hourWeatherImg.onload = function() { context.drawImage(hourWeatherImg,
-            i * 100, canvas.height - 75); };
+            i * hourlyWidthSpace, timeBottomY); };
 
-        //Temperature text display
-        context.fillText(hourTemp + "°F", i * 100, canvas.height);
+        context.fillText(hourTemp + "°F", i * hourlyWidthSpace, hourlyTempY);
     }
 };
