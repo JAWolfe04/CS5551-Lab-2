@@ -39,46 +39,49 @@ function errorAlert(xhr) {
 }
 
 function drawCurrentWeather(canvas, curWeather) {
-    let curFontSize = 35;
+    let locFontSize = 35;
+    let tempFontSize = 50;
+    let defaultFontSize = 25;
+    let iconHalfSize = 50;
     let rightColX = 500;
-    let secondRowY = 75;
-    let thirdRowY = secondRowY + 60;
+    let spaceSize = 5;
+    let topMargin = 10;
+    let secondRowY = locFontSize + tempFontSize + topMargin;
+    let secRowSecColY = locFontSize + defaultFontSize + topMargin;
+    let thirdRowY = secondRowY + defaultFontSize + spaceSize;
 
     let context = canvas.getContext("2d");
 
-    context.font = curFontSize +"px Arial";
-    context.fillText(curWeather.name + ", " + curWeather.sys.country, 0, curFontSize);
+    context.font = locFontSize +"px Arial";
+    context.fillText(curWeather.name + ", " + curWeather.sys.country, 0, locFontSize);
 
     let curWeatherImg = new Image();
     curWeatherImg.src = "https://openweathermap.org/img/wn/" + curWeather.weather[0].icon + "@2x.png";
     curWeatherImg.onload = function() {
         // Tweaked image position for it to look centered
-        context.drawImage(curWeatherImg, -15, secondRowY - 20);
+        context.drawImage(curWeatherImg, -15, secondRowY - iconHalfSize - 20);
 
-        curFontSize = 50;
-        context.font = curFontSize + "px Arial";
+        context.font = tempFontSize + "px Arial";
         context.fillText(parseFloat(curWeather.main.temp).toFixed(0) + "°F",
-            curWeatherImg.width, curFontSize + secondRowY);
+            curWeatherImg.width, secondRowY);
     }
 
-    curFontSize = 25;
-    context.font = curFontSize + "px Arial";
-    context.fillText(curWeather.weather[0].main, 5, thirdRowY + curFontSize);
+    context.font = defaultFontSize + "px Arial";
+    context.fillText(curWeather.weather[0].main, 5, thirdRowY);
 
-    let spaceSize = 5;
     context.fillText("Feels like " + parseFloat(curWeather.main.feels_like).toFixed(0)
-        + "°F", rightColX, secondRowY + curFontSize);
+        + "°F", rightColX, secRowSecColY);
 
     context.fillText("Humidity " + curWeather.main.humidity + "%", rightColX,
-        secondRowY + curFontSize * 2 + spaceSize);
+        secRowSecColY + defaultFontSize + spaceSize);
 
     context.fillText("Wind " + parseFloat(curWeather.wind.speed).toFixed(0) +
-        " mph", rightColX, secondRowY + curFontSize * 3 + spaceSize * 2);
+        " mph", rightColX, secRowSecColY + (defaultFontSize +  spaceSize) * 2);
 
     // Find the point where the graph should start
     // and pass it to the next drawForecast
-    let leftBottom = thirdRowY + curFontSize;
-    let rightBottom = secondRowY + curFontSize * 3 + spaceSize * 2;
+    let leftBottom = thirdRowY;
+    let rightBottom = secRowSecColY + (defaultFontSize +  spaceSize) * 2;
     return leftBottom > rightBottom ? leftBottom : rightBottom;
 };
 

@@ -33,6 +33,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunManager">
     <configuration name="WeatherApp.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/CS5551-Lab-2/WeatherApp.html" useBuiltInWebServerPort="true">
@@ -55,7 +56,9 @@
       <option name="presentableId" value="Default" />
       <updated>1580429264683</updated>
       <workItem from="1580429270305" duration="17165000" />
-      <workItem from="1580476238307" duration="42148000" />
+      <workItem from="1580476238307" duration="44725000" />
+      <workItem from="1580801368820" duration="80000" />
+      <workItem from="1580860502145" duration="1571000" />
     </task>
     <servers />
   </component>
@@ -67,6 +70,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="413" y="112" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1366.728@0.0.1366.728" timestamp="1580438275456" />
+    <state x="462" y="107" key="FileChooserDialogImpl" timestamp="1580801416876">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="462" y="107" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1580801416876" />
     <state width="1308" height="204" key="GridCell.Tab.0.bottom" timestamp="1580534195522">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
