@@ -4,7 +4,7 @@ $(function(){
 });
 
 function createWeatherDisplay() {
-    let location = $("#city").val() + ", " + $("#country").val();
+    let zipcode = 0;
     let canvas = document.getElementById("weatherCanvas");
     let graphStart = 0;
 
@@ -14,23 +14,31 @@ function createWeatherDisplay() {
     canvas.setAttribute("width", canvasWidth.toString());
     canvas.setAttribute("height", canvasHeight.toString());
 
-    //Load and draw current weather info
-    $.get("http://api.openweathermap.org/data/2.5/weather?q=" + location +
-        "&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
+    $.get("http://www.zipcodeapi.com/rest/js-nug0wEQ89nSjXIoOJ1FG6VJFf2j7u30ZQUC5MlwdDj9DKHz8FBXiw9sPmk2uJW7r/city-zips.json/"
+        + $("#city").val() + "/" + $("#state").val(),
         function( data ) {
-            graphStart = drawCurrentWeather(canvas, data);
+            zipcode = data.zip_codes[0];
         }, "json" )
         .fail(errorAlert)
         .done(function(){
-            //Load and draw next 24 hour forecast
-            $.get("http://api.openweathermap.org/data/2.5/forecast?q=" + location +
-                "&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
+            //Load and draw current weather info
+            $.get("http://api.openweathermap.org/data/2.5/weather?zip=" + zipcode +
+                ",US&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
                 function( data ) {
-                    drawForecast(canvas, data.list, graphStart);
+                    graphStart = drawCurrentWeather(canvas, data);
                 }, "json" )
-                //Error check in the event the connection is lost between
-                // making the second api call or another unexpected error
-                .fail(errorAlert);
+                .fail(errorAlert)
+                .done(function(){
+                    //Load and draw next 24 hour forecast
+                    $.get("http://api.openweathermap.org/data/2.5/forecast?zip=" + zipcode +
+                        ",US&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
+                        function( data ) {
+                            drawForecast(canvas, data.list, graphStart);
+                        }, "json" )
+                        //Error check in the event the connection is lost between
+                        // making the second api call or another unexpected error
+                        .fail(errorAlert);
+                });
         });
 }
 
@@ -53,7 +61,7 @@ function drawCurrentWeather(canvas, curWeather) {
     let context = canvas.getContext("2d");
 
     context.font = locFontSize +"px Arial";
-    context.fillText(curWeather.name + ", " + curWeather.sys.country, 0, locFontSize);
+    context.fillText(curWeather.name + ", " + $("#state").val(), 0, locFontSize);
 
     let curWeatherImg = new Image();
     curWeatherImg.src = "https://openweathermap.org/img/wn/" + curWeather.weather[0].icon + "@2x.png";
