@@ -1,9 +1,43 @@
+//-----------------------------------------------------------------------------------------------------------------
+// CS 5551
+// Lab 2
+// Jonathan Wolfe
+// Bill Yerkes
+// Create a single page application using bootstrap framework
+// 1. The page should have two text fields that takes state code for example: MO or city name: Kansas City.
+// 2. Pass those values and display weather details of the city like temperature, wind, pressure, humidity etc.
+// 3. Also display the hourly forecast (any 2-3 details from the API) for 5 hours in the city entered
+//
+// For Reference: https://openweathermap.org/api/hourly-forecast
+//-----------------------------------------------------------------------------------------------------------------
+
+
 //Be sure the page is loaded before setting event handlers
 $(function(){
+    //-----------------------------------------------------------------------------------------------------------------
+    //  Search Button:
+    //
+    //  Invoke the create weather display function
+    //  Process the request to get the weather for the given city and state
+    //  Convert the city and state to a zip code, use the zip code to determine the weather at that loction
+    //-----------------------------------------------------------------------------------------------------------------
     $("#searchBtn").click(createWeatherDisplay);
 });
 
+//-----------------------------------------------------------------------------------------------------------------
+//  createWeatherDisplay:
+//
+// Input:
+//  City [text box]
+//  State [text box]
+//
+// Output
+//  Current weather for the given city
+//  Weather for forcast for the next 24 hrs
+//-----------------------------------------------------------------------------------------------------------------
+
 function createWeatherDisplay() {
+    // Init Variables
     let zipcode = 0;
     let canvas = document.getElementById("weatherCanvas");
     let graphStart = 0;
@@ -14,6 +48,9 @@ function createWeatherDisplay() {
     canvas.setAttribute("width", canvasWidth.toString());
     canvas.setAttribute("height", canvasHeight.toString());
 
+    // Get the a zip code for the city/state entered, to use to determine the weather.
+    // Calls are nested because each call is dependent on the previous results, if
+    // one fails the next should not proceed
     $.get("http://www.zipcodeapi.com/rest/js-nug0wEQ89nSjXIoOJ1FG6VJFf2j7u30ZQUC5MlwdDj9DKHz8FBXiw9sPmk2uJW7r/city-zips.json/"
         + $("#city").val() + "/" + $("#state").val(),
         function( data ) {
@@ -21,7 +58,7 @@ function createWeatherDisplay() {
         }, "json" )
         .fail(errorAlert)
         .done(function(){
-            //Load and draw current weather info
+            //Load and draw current weather info for the computed zip code
             $.get("http://api.openweathermap.org/data/2.5/weather?zip=" + zipcode +
                 ",US&units=imperial&APPID=fc52e8acb25601f279518cf1b7df54fc",
                 function( data ) {
@@ -42,11 +79,29 @@ function createWeatherDisplay() {
         });
 }
 
+//-----------------------------------------------------------------------------------------------------------------
+//  errorAlert:
+//
+//  If the api call is not able to find the city/state entered display a message to the user.
+//-----------------------------------------------------------------------------------------------------------------
+
 function errorAlert(xhr) {
     alert(xhr.readyState == 4 ? "Unable to find entered city" : "Unable to connect");
 }
 
+//-----------------------------------------------------------------------------------------------------------------
+//  drawCurrentWeather:
+//
+// Input:
+//  canvas         Area to display information
+//  curWeather     Data about the weather
+//
+// Output
+//  Display information about the current weather situation for the given city/state
+//-----------------------------------------------------------------------------------------------------------------
+
 function drawCurrentWeather(canvas, curWeather) {
+    // initialize variables
     let locFontSize = 35;
     let tempFontSize = 50;
     let defaultFontSize = 25;
@@ -92,6 +147,18 @@ function drawCurrentWeather(canvas, curWeather) {
     let rightBottom = secRowSecColY + (defaultFontSize +  spaceSize) * 2;
     return leftBottom > rightBottom ? leftBottom : rightBottom;
 };
+
+//-----------------------------------------------------------------------------------------------------------------
+//  drawForecast:
+//
+// Input:
+//  canvas         Area to display information
+//  hourly         Data about the hourly weather forcast
+//  graphTopY      Location as to where to start displaying the forcast information
+//
+// Output
+//  Weather for forcast for the next 24 hrs
+//-----------------------------------------------------------------------------------------------------------------
 
 function drawForecast(canvas, hourly, graphTopY) {
     let context = canvas.getContext("2d");
